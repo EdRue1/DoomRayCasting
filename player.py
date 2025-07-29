@@ -13,6 +13,8 @@ class Player:
         self.rel = 0
         self.health_recovery_delay = 700
         self.time_prev = pg.time.get_ticks()
+        #diagonal movement correction
+        self.diag_move_corr = 1 / math.sqrt(2)
 
     def recover_health(self):
         if self.check_health_recovery_delay() and self.health < PLAYER_MAX_HEALTH:
@@ -53,18 +55,27 @@ class Player:
         speed_cos = speed * cos_a
 
         keys = pg.key.get_pressed()
+        num_key_pressed = -1
         if keys[pg.K_w]:
+            num_key_pressed += 1
             dx += speed_cos
             dy += speed_sin
         if keys[pg.K_s]:
+            num_key_pressed += 1
             dx += -speed_cos
             dy += -speed_sin
         if keys[pg.K_a]:
+            num_key_pressed += 1
             dx += speed_sin
             dy += -speed_cos
         if keys[pg.K_d]:
+            num_key_pressed += 1
             dx += -speed_sin
             dy += speed_cos
+
+        if num_key_pressed:
+            dx *= self.diag_move_corr
+            dy *= self.diag_move_corr
 
         self.check_wall_collision(dx, dy)
 
@@ -95,7 +106,7 @@ class Player:
         if mx < MOUSE_BORDER_LEFT or mx > MOUSE_BORDER_RIGHT:
             pg.mouse.set_pos([HALF_WIDTH, HALF_HEIGHT])
         self.rel = pg.mouse.get_rel()[0]
-        self.rel = max(-MOUS_MAX_REL, min(MOUS_MAX_REL, self.rel))
+        self.rel = max(-MOUSE_MAX_REL, min(MOUSE_MAX_REL, self.rel))
         self.angle += self.rel * MOUSE_SENSITIVITY * self.game.delta_time
 
     def update(self):
